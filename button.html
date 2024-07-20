@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <link rel="icon" href="images/icon.png" type="image/gif" sizes="16x16">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
+    <link id="bootstrap" href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link id="mdb" href="css/mdb.min.css" rel="stylesheet" type="text/css" />
+    <link href="css/plugins.css" rel="stylesheet" type="text/css" />    
+    <link href="css/style.css" rel="stylesheet" type="text/css" />
+    <link href="css/de-grey.css" rel="stylesheet" type="text/css" />
+    <link id="colors" href="css/colors/scheme-08.css" rel="stylesheet" type="text/css" />
+    <link href="css/coloring-gradient.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.3.6/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.7.0/dist/umd/index.min.js"></script>
+    <script src="https://unpkg.com/web3modal@1.9.4/dist/index.js"></script>
+    <style>
+        .connected {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="dark-scheme de-grey wide">
+    <div id="wrapper">
+        <header class="transparent">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="de-flex sm-pt10">
+                            <div class="de-flex-col header-col-mid">
+                               <div class="menu_side_area">
+                                    <a href="#" class="btn-main btn-wallet" id="connectWalletButton"><i class="icon_wallet_alt"></i><span>Connect Wallet</span></a>
+                                    <span id="menu-btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+
+        <a href="#" id="back-to-top"></a>
+        
+    </div>
+    
+    
+    <script src="js/plugins.js"></script>
+    <script src="js/designesia.js"></script>
+
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.0/web3.min.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+    <script>
+    let web3;
+    let web3Modal;
+
+    async function initWeb3Modal() {
+        const providerOptions = {
+            walletconnect: {
+                package: window.WalletConnectProvider.default,
+                options: {
+                    infuraId: ""
+                }
+            }
+        };
+
+        web3Modal = new window.Web3Modal.default({
+            cacheProvider: false,
+            providerOptions,
+        });
+
+        document.getElementById("connectWalletButton").addEventListener("click", onConnectWallet);
+    }
+
+    async function onConnectWallet() {
+        try {
+            const provider = await web3Modal.connect();
+            web3 = new Web3(provider);
+            const accounts = await web3.eth.getAccounts();
+            const selectedAccount = accounts[0];
+
+            
+            localStorage.setItem('walletAddress', selectedAccount);
+
+            
+            updateWalletButton(selectedAccount);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function updateWalletButton(address) {
+        const walletButton = document.getElementById('connectWalletButton');
+        if (walletButton) {
+            walletButton.classList.remove('btn-main');
+            walletButton.innerHTML = `
+                <div class="connected">
+                    ${address.slice(0, 6)}...${address.slice(-4)}
+                </div>
+            `;
+        }
+    }
+
+    
+    window.addEventListener('load', async () => {
+        await initWeb3Modal();
+        const storedAddress = localStorage.getItem('walletAddress');
+        if (storedAddress) {
+            updateWalletButton(storedAddress);
+        }
+    });
+
+</script>
+<script>
+        let web3;
+        let provider;
+        let selectedAccount;
+        let web3Modal;
+
+        async function init() {
+            const providerOptions = {
+                walletconnect: {
+                    package: window.WalletConnectProvider.default,
+                    options: {
+                        infuraId: ""
+                    }
+                },
+                
+                metamask: {
+                    package: window.ethereum,
+                    options: {}
+                }
+                
+            };
+
+            web3Modal = new window.Web3Modal.default({
+                cacheProvider: false,
+                providerOptions,
+            });
+
+            
+            document.getElementById("connectWalletButton").addEventListener("click", onConnect);
+        }
+
+        async function onConnect() {
+            try {
+                
+                provider = await web3Modal.connect();
+                web3 = new Web3(provider);
+                await fetchAccountData();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function fetchAccountData() {
+            const accounts = await web3.eth.getAccounts();
+            selectedAccount = accounts[0]; 
+            document.getElementById("connectWalletButton").innerHTML = `
+                <div class="connected">
+                    ${selectedAccount.slice(0, 6)}...${selectedAccount.slice(-4)}
+                </div>
+            `;
+        }
+
+
+        window.addEventListener('load', async () => {
+            await init();
+        });
+    </script>
+</body>
+</html>
